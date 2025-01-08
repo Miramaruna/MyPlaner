@@ -1,4 +1,6 @@
 from django.db import models
+
+# User
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
@@ -6,7 +8,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     username = models.CharField(
         max_length=50,
-        verbose_name="Имя пользователя"
+        verbose_name="Имя пользователя",
+        unique=True,
+        help_text="Только уникальные имена пользователей"
     )
     email = models.EmailField(
         verbose_name="Адрес электронной почты"
@@ -41,7 +45,24 @@ class Category(models.Model):
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
         
+class Plan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория")
+    
+    title = models.IntegerField(
+        verbose_name="Название плана"
+    )
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        verbose_name = "Задача"
+        verbose_name_plural = "Задачи"
+        
 class Task(models.Model):
+    plan = models.ForeignKey(Plan, on_delete = models.CASCADE, related_name="план")
+    
     title = models.CharField(
         max_length=100,
         verbose_name="Название задачи"

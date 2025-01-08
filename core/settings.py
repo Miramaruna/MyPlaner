@@ -136,11 +136,11 @@ MEDIA_ROOT = BASE_DIR / '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'news.User'
+AUTH_USER_MODEL = 'main.User'
 
 LOGIN_URL = '/login/'  # или путь, где у вас находится страница входа
 
-LOGIN_REDIRECT_URL = '/todo/'  # Страница, на которую перенаправляются пользователи после входа
+LOGIN_REDIRECT_URL = '/planer/'  # Страница, на которую перенаправляются пользователи после входа
 
 ESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Сессия сохраняется при закрытии браузера
