@@ -42,6 +42,15 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
+        .form-container .errors {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            text-align: left;
+        }
+
         .form-container form {
             display: flex;
             flex-direction: column;
@@ -84,11 +93,22 @@
 <body>
     <div class="form-container">
         <h2>Регистрация</h2>
+        
+        <!-- Вывод ошибок -->
+        {% if messages %}
+            <div class="errors">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form action="{% url 'signIn' %}" method="POST">
             {% csrf_token %}
             <input type="text" name="username" placeholder="Введите имя пользователя" required>
             <input type="email" name="email" placeholder="Введите email" required>
             <input type="password" name="password" placeholder="Введите пароль" required>
+            <input type="password" name="confirm_password" placeholder="Подтвердите пароль" required>
             <input type="number" name="age" placeholder="Введите ваш возраст (необязательно)" min="13">
             <button type="submit">Зарегистрироваться</button>
         </form>

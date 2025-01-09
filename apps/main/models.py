@@ -67,11 +67,6 @@ class Task(models.Model):
         max_length=100,
         verbose_name="Название задачи"
     )
-    description = models.TextField(
-        verbose_name="Описание задачи",
-        blank=True,
-        null=True
-    )
     priority = models.IntegerField(
         choices=[(1, 'Низкий'), (2, 'Средний'), (3, 'Высокий')],
         verbose_name="Приоритет задачи"

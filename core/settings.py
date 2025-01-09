@@ -144,3 +144,7 @@ LOGIN_REDIRECT_URL = '/planer/'  # Страница, на которую пер�
 
 ESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Сессия сохраняется при закрытии браузера
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]

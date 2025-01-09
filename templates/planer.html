@@ -1,0 +1,37 @@
+<body>
+    <header>
+        <h1>Мои планы</h1>
+        <div class="user-info">
+            <img src="https://via.placeholder.com/40" alt="Avatar">
+            <span>{{ user.username }}</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Кнопка для создания нового плана -->
+        <button class="create-plan-btn" onclick="window.location.href='{% url 'create_plan' %}'">Создать новый план</button>
+
+        <div class="plans">
+            {% for plan in plans %}
+            <div class="plan">
+                <h2>
+                    {{ plan.title }}
+                    <span class="category">{{ plan.category }}</span>
+                </h2>
+
+                <!-- Кнопка для добавления задачи на конкретный план -->
+                <button class="add-task-btn" onclick="window.location.href='{% url 'add_task' plan.id %}'">Добавить задачу</button>
+
+                <div class="tasks">
+                    {% for task in plan.tasks.all %}
+                    <div class="task {% if task.completed %}completed{% endif %}">
+                        <p>{{ task.title }} - {{ task.status }} - {{ task.deadline }}</p>
+                        <input type="checkbox" {% if task.completed %}checked{% endif %} disabled>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>

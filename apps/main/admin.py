@@ -15,7 +15,7 @@ class UserAdmin(admin.ModelAdmin):
 admin.register(Category)
 
 @admin.register(Plan)
-class TaskAdmin(admin.ModelAdmin):
+class PanelAdmin(admin.ModelAdmin):
     list_display = ('user', 'category', 'title')
     list_filter = ('user', 'category')
     search_fields = ('title', )
@@ -23,7 +23,7 @@ class TaskAdmin(admin.ModelAdmin):
     
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('plan', 'title', 'description', 'priority', 'deadline', 'status', 'is_completed')
+    list_display = ('plan', 'title', 'priority', 'deadline', 'status', 'is_completed')
     list_filter = ('plan', 'priority', 'status')
-    search_fields = ('title', 'description')
+    search_fields = ('title', )
     ordering = ('-id',)
