@@ -1,7 +1,7 @@
 from django.urls import path
 
 # views
-from apps.main.views import check_user_visit, choseLorS, signIn, logIn, planer, add_task
+from apps.main.views import check_user_visit, choseLorS, signIn, logIn, planer, add_task, create_plan
 
 urlpatterns = [
     path('', check_user_visit, name="first"),
@@ -10,5 +10,6 @@ urlpatterns = [
     # path('logout/', logout, name="logout"),
     path('signIn/', signIn, name="signIn"),
     path('planer/', planer, name="planer"),
-    path('add_task/<int:plan_id>/', add_task, name='add_task')
+    path('add_task/<int:plan_id>/', add_task, name='add_task'),
+    path('create_plan/', create_plan, name="create_plan")
 ]

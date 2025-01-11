@@ -50,15 +50,16 @@ class Plan(models.Model):
     
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория")
     
-    title = models.IntegerField(
+    title = models.CharField(
+        max_length=100,
         verbose_name="Название плана"
     )
     def __str__(self):
         return self.title
     
     class Meta:
-        verbose_name = "Задача"
-        verbose_name_plural = "Задачи"
+        verbose_name = "План"
+        verbose_name_plural = "Планы"
         
 class Task(models.Model):
     plan = models.ForeignKey(Plan, on_delete = models.CASCADE, related_name="план")

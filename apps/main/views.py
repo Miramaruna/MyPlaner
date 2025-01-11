@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 # models
-from apps.main.models import User, Plan
+from apps.main.models import User, Plan, Category
 
 # serializers
 from apps.main.serializers import UserRegisterSerializer
@@ -18,6 +18,7 @@ from django.contrib import messages
 
 # login
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 
 # russian words
 import re
@@ -140,8 +141,21 @@ def logIn(request):
     return render(request, 'login.html')
 
 def planer(request):
-    plans = Plan.objects.all()  # Получаем все планы
+    plans = Plan.objects.filter(user=request.user)  # Получаем все планы
     for plan in plans:
         if not plan.id:
             print(f"План без ID: {plan.title}")
-    return render(request, 'planer.html', {'plans': plans})
+    category = Category.objects.all()
+    return render(request, 'planer.html', {'plans': plans, 'category': category})
+
+@login_required
+def create_plan(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        category_id = request.POST.get('category')
+        category = get_object_or_404(Category, id=category_id)
+        
+        
+        Plan.objects.create(title=title, category=category, user=request.user)
+        return redirect('/planer/')  # Замените на URL вашей страницы с планами
+    return render(request, 'add_plan.html')

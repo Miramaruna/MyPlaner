@@ -12,7 +12,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email')
     ordering = ('-created_at',)
     
-admin.register(Category)
+admin.site.register(Category)
 
 @admin.register(Plan)
 class PanelAdmin(admin.ModelAdmin):

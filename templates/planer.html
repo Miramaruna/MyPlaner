@@ -1,3 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои планы</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a89cc, #60a3bc, #82ccdd, #b8e994);
+            background-size: 400% 400%;
+            animation: gradient 8s ease infinite;
+            color: white;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        header .user-info span {
+            font-size: 1.2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .plan {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        .add-task-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            color: white;
+            background: linear-gradient(45deg, #ff9ff3, #feca57);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-task-btn:hover {
+            background: linear-gradient(45deg, #feca57, #ff9ff3);
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none; /* Убедитесь, что модальное окно скрыто по умолчанию */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .modal-content input, .modal-content button, .modal-content select {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        .modal-content button {
+            background: #60a3bc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background: #82ccdd;
+        }
+    </style>
+</head>
 <body>
     <header>
         <h1>Мои планы</h1>
@@ -8,30 +135,50 @@
     </header>
 
     <div class="container">
-        <!-- Кнопка для создания нового плана -->
-        <button class="create-plan-btn" onclick="window.location.href='{% url 'create_plan' %}'">Создать новый план</button>
-
+        <button class="add-task-btn" onclick="openModal()">Добавить план</button>
         <div class="plans">
-            {% for plan in plans %}
-            <div class="plan">
-                <h2>
-                    {{ plan.title }}
-                    <span class="category">{{ plan.category }}</span>
-                </h2>
-
-                <!-- Кнопка для добавления задачи на конкретный план -->
-                <button class="add-task-btn" onclick="window.location.href='{% url 'add_task' plan.id %}'">Добавить задачу</button>
-
-                <div class="tasks">
-                    {% for task in plan.tasks.all %}
-                    <div class="task {% if task.completed %}completed{% endif %}">
-                        <p>{{ task.title }} - {{ task.status }} - {{ task.deadline }}</p>
-                        <input type="checkbox" {% if task.completed %}checked{% endif %} disabled>
-                    </div>
-                    {% endfor %}
+            {% if plans %}
+                {% for plan in plans %}
+                <div class="plan">
+                    <h2>{{ plan.title }}</h2>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                <p>Планы отсутствуют</p>
+            {% endif %}
         </div>
     </div>
+
+    <div class="modal" id="addPlanModal">
+        <div class="modal-content">
+            <h2>Добавить новый план</h2>
+            <form method="POST" action="{% url 'create_plan' %}">
+                {% csrf_token %}
+                <input type="text" name="title" placeholder="Название плана" required>
+
+                <!-- Поле выбора категории -->
+                <label for="category">Выберите категорию:</label>
+                <select name="category" id="category" required>
+                    <option value="" disabled selected>Выберите категорию</option>
+                    {% for category in category %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Добавить</button>
+                <button type="button" onclick="closeModal()">Отмена</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('addPlanModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('addPlanModal').style.display = 'none';
+        }
+    </script>
 </body>
+</html>
