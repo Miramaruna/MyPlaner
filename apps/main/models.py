@@ -62,21 +62,31 @@ class Plan(models.Model):
         verbose_name_plural = "Планы"
         
 class Task(models.Model):
-    plan = models.ForeignKey(Plan, on_delete = models.CASCADE, related_name="план")
+    plan = models.ForeignKey(Plan, on_delete = models.CASCADE, related_name="tasks")
     
     title = models.CharField(
         max_length=100,
         verbose_name="Название задачи"
     )
-    priority = models.IntegerField(
-        choices=[(1, 'Низкий'), (2, 'Средний'), (3, 'Высокий')],
+    priority = models.CharField(
+        max_length=7,
+        choices=[
+            ('low', 'Низкий'),
+            ('medium', 'Средний'),
+            ('high', 'Высокий'),
+        ],
         verbose_name="Приоритет задачи"
     )
     deadline = models.DateTimeField(
         verbose_name='Дедлайн'
     )
-    status = models.IntegerField(
-        choices=[(1, "В ожидании"), (2, "В работе"), (3, "Закончено")],
+    status = models.CharField(
+        max_length=12,
+        choices=[
+            ('not_started', "В ожидании"), 
+            ('in_progress', "В работе"), 
+            ('completed', "Закончено")
+        ],
         verbose_name="Статус задачи"
     )
     is_completed = models.BooleanField(

@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 # models
-from apps.main.models import User, Plan, Category
+from apps.main.models import User, Plan, Category, Task
 
 # serializers
 from apps.main.serializers import UserRegisterSerializer
@@ -44,6 +44,13 @@ def add_task(request, plan_id):
         title = request.POST.get('title')
         deadline = request.POST.get('deadline')
         priority = request.POST.get('priority', 'medium')
+        status = request.POST.get('status')
+        is_completed = None
+        
+        if status == 'completed':
+            is_completed = True
+        else:
+            is_completed = False
 
         # Проверяем, что все необходимые данные заполнены
         if not title:
@@ -54,7 +61,9 @@ def add_task(request, plan_id):
             plan=plan,
             title=title,
             deadline=deadline,
-            priority=priority
+            priority=priority,
+            status=status,
+            is_completed=is_completed
         )
         return redirect('planer')  # Перенаправление на главную страницу или куда нужно
 
@@ -140,8 +149,9 @@ def logIn(request):
             messages.error(request, "Неверное имя пользователя или пароль.")
     return render(request, 'login.html')
 
+@login_required
 def planer(request):
-    plans = Plan.objects.filter(user=request.user)  # Получаем все планы
+    plans = Plan.objects.prefetch_related('tasks').filter(user=request.user)  # Получаем все планы
     for plan in plans:
         if not plan.id:
             print(f"План без ID: {plan.title}")
