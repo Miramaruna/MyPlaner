@@ -4,8 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои планы</title>
+
+    <script>
+        function openModal() {
+            document.getElementById('addPlanModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('addPlanModal').style.display = 'none';
+        }
+
+        function toggleCompletion(taskId) {
+            fetch(`/complete_task/${taskId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const taskElement = document.querySelector(`.task[data-task-id="${taskId}"]`);
+                        if (taskElement) {
+                            taskElement.classList.toggle('completed');
+                            taskElement.querySelector('button').textContent = taskElement.classList.contains('completed') ? 'Сделано' : 'Не сделано';
+                        }
+                    }
+                });
+        }
+
+        function deleteTask(taskId) {
+            fetch(`/delete_task/${taskId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+        }
+
+        function deletePlan(planId) {
+            fetch(`/delete_plan/${planId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+        }
+
+        function openTaskModal(planId) {
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('modal-content');
+
+            const taskForm = document.createElement('form');
+            taskForm.method = 'POST';
+            taskForm.action = `/add_task/${planId}/`;
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.name = 'title';
+            titleInput.placeholder = 'Название задачи';
+            titleInput.required = true;
+
+            const priorityInput = document.createElement('select');
+            priorityInput.name = 'priority';
+            priorityInput.required = true;
+
+            const priorityOptions = [
+                { value: '', text: 'Выберите приоритет', disabled: true, selected: true },
+                { value: 'low', text: 'Низкий' },
+                { value: 'medium', text: 'Средний' },
+                { value: 'high', text: 'Высокий' }
+            ];
+            priorityOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.text;
+                if (option.disabled) opt.disabled = true;
+                if (option.selected) opt.selected = true;
+                priorityInput.appendChild(opt);
+            });
+
+            const deadlineInput = document.createElement('input');
+            deadlineInput.type = 'date';
+            deadlineInput.name = 'deadline';
+            deadlineInput.required = true;
+
+            const statusInput = document.createElement('select');
+            statusInput.name = 'status';
+            statusInput.required = true;
+
+            const statusOptions = [
+                { value: 'not_started', text: 'Не начато' },
+                { value: 'in_progress', text: 'В процессе' },
+                { value: 'completed', text: 'Завершено' }
+            ];
+            statusOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.text;
+                statusInput.appendChild(opt);
+            });
+
+            taskForm.appendChild(csrfInput);
+            taskForm.appendChild(titleInput);
+            taskForm.appendChild(priorityInput);
+            taskForm.appendChild(deadlineInput);
+            taskForm.appendChild(statusInput);
+
+            const submitButton = document.createElement('button');
+            submitButton.type = 'submit';
+            submitButton.textContent = 'Добавить задачу';
+
+            taskForm.appendChild(submitButton);
+
+            const cancelButton = document.createElement('button');
+            cancelButton.type = 'button';
+            cancelButton.textContent = 'Отмена';
+            cancelButton.onclick = function() {
+                document.body.removeChild(modalContent);
+            };
+
+            taskForm.appendChild(cancelButton);
+
+            modalContent.appendChild(taskForm);
+            document.body.appendChild(modalContent);
+        }
+    </script>
+
     <style>
-        /* Весь стиль остается прежним, с некоторыми улучшениями */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -84,6 +212,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .task-details {
+            flex: 1;
+            margin-right: 10px;
         }
 
         .task button {
@@ -93,6 +227,7 @@
             padding: 5px 10px;
             cursor: pointer;
             transition: background 0.3s;
+            margin-left: 5px;
         }
 
         .task button:hover {
@@ -125,7 +260,6 @@
             background: linear-gradient(45deg, #feca57, #ff9ff3);
         }
 
-        /* Модальное окно */
         .modal {
             display: none;
             position: fixed;
@@ -136,6 +270,7 @@
             background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
+            z-index: 1000; /* Чтобы окно было поверх остальных элементов */
         }
 
         .modal-content {
@@ -145,8 +280,14 @@
             border-radius: 10px;
             text-align: center;
             width: 400px;
+            max-width: 90%; /* Чтобы окно не выходило за пределы экрана */
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translate(-50%, -50%); /* Центрирование по вертикали и горизонтали */
+            position: absolute;
+            top: 50%;
+            left: 50%;
         }
+
 
         .modal-content input, .modal-content button, .modal-content select {
             width: 100%;
@@ -197,14 +338,18 @@
                     <div class="tasks">
                         {% if plan.tasks.all %}
                             {% for task in plan.tasks.all %}
-                            <div class="task {% if task.is_completed %}completed{% endif %}">
-                                <span>{{ task.title }}</span>
+                            <div class="task {% if task.is_completed %}completed{% endif %}" data-task-id="{{ task.id }}">
+                                <div class="task-details">
+                                    <span>{{ task.title }}</span><br>
+                                    <span>Приоритет: {{ task.priority }}</span> | 
+                                    <span>Статус: {{ task.status }}</span> | 
+                                    <span>Дедлайн: {{ task.deadline }}</span>
+                                </div>
                                 <div>
-                                    <span>Приоритет: {{ task.priority }}</span> |
-                                    <span>Статус: {{ task.status }}</span>
                                     <button onclick="toggleCompletion({{ task.id }})">
                                         {% if task.is_completed %}Сделано{% else %}Не сделано{% endif %}
                                     </button>
+                                    <button onclick="deleteTask({{ task.id }})">Удалить</button>
                                 </div>
                             </div>
                             {% endfor %}
@@ -213,6 +358,7 @@
                         {% endif %}
                     </div>
                     <button class="add-task-btn" onclick="openTaskModal({{ plan.id }})">Добавить задачу</button>
+                    <button class="add-task-btn" onclick="deletePlan({{ plan.id }})">Удалить план</button>
                 </div>
                 {% endfor %}
             {% else %}
@@ -243,122 +389,4 @@
         </div>
     </div>
 
-    <script>
-        function openModal() {
-            document.getElementById('addPlanModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('addPlanModal').style.display = 'none';
-        }
-
-        function toggleCompletion(taskId) {
-            // Отправить запрос на сервер для обновления статуса задачи
-            fetch(`/toggle_completion/${taskId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Обновить статус задачи на странице
-                        const taskElement = document.querySelector(`.task[data-task-id="${taskId}"]`);
-                        if (taskElement) {
-                            taskElement.classList.toggle('completed');
-                            taskElement.querySelector('button').textContent = taskElement.classList.contains('completed') ? 'Сделано' : 'Не сделано';
-                        }
-                    }
-                });
-        }
-
-        function openTaskModal(planId) {
-            const modalContent = document.createElement('div');
-            modalContent.classList.add('modal-content');
-
-            const taskForm = document.createElement('form');
-            taskForm.method = 'POST';
-            taskForm.action = `/add_task/${planId}/`;
-
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = '{{ csrf_token }}';
-
-            const titleInput = document.createElement('input');
-            titleInput.type = 'text';
-            titleInput.name = 'title';
-            titleInput.placeholder = 'Название задачи';
-            titleInput.required = true;
-
-            const priorityInput = document.createElement('select');
-            priorityInput.name = 'priority';
-            priorityInput.required = true;
-
-            const priorityOptions = [
-                { value: '', text: 'Выберите приоритет', disabled: true, selected: true },
-                { value: 'low', text: 'Низкий' },
-                { value: 'medium', text: 'Средний' },
-                { value: 'high', text: 'Высокий' }
-            ];
-            priorityOptions.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option.value;
-                opt.textContent = option.text;
-                if (option.disabled) opt.disabled = true;
-                if (option.selected) opt.selected = true;
-                priorityInput.appendChild(opt);
-            });
-
-            const deadlineInput = document.createElement('input');
-            deadlineInput.type = 'date';
-            deadlineInput.name = 'deadline';
-            deadlineInput.required = true;
-
-            const statusInput = document.createElement('select');
-            statusInput.name = 'status';
-            statusInput.required = true;
-
-            const statusOptions = [
-                { value: 'not_started', text: 'Не начато' },
-                { value: 'in_progress', text: 'В процессе' },
-                { value: 'completed', text: 'Завершено' }
-            ];
-            statusOptions.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option.value;
-                opt.textContent = option.text;
-                statusInput.appendChild(opt);
-            });
-
-            const submitButton = document.createElement('button');
-            submitButton.type = 'submit';
-            submitButton.textContent = 'Добавить';
-
-            const cancelButton = document.createElement('button');
-            cancelButton.type = 'button';
-            cancelButton.textContent = 'Отмена';
-            cancelButton.onclick = () => document.body.removeChild(taskModal);
-
-            taskForm.appendChild(csrfInput);
-            taskForm.appendChild(titleInput);
-            taskForm.appendChild(priorityInput);
-            taskForm.appendChild(deadlineInput);
-            taskForm.appendChild(statusInput);
-            taskForm.appendChild(submitButton);
-            taskForm.appendChild(cancelButton);
-
-            modalContent.appendChild(taskForm);
-
-            const taskModal = document.createElement('div');
-            taskModal.classList.add('modal');
-            taskModal.style.display = 'flex';
-            taskModal.appendChild(modalContent);
-
-            document.body.appendChild(taskModal);
-
-            taskModal.addEventListener('click', (e) => {
-                if (e.target === taskModal) {
-                    document.body.removeChild(taskModal);
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+    

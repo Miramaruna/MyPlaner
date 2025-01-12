@@ -169,3 +169,27 @@ def create_plan(request):
         Plan.objects.create(title=title, category=category, user=request.user)
         return redirect('/planer/')  # Замените на URL вашей страницы с планами
     return render(request, 'add_plan.html')
+
+@login_required
+def delete_plan(request, plan_id):
+    if request.method == 'POST':
+        plan = get_object_or_404(Plan, id=plan_id)
+        plan.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+@login_required
+def delete_task(request, task_id):
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=task_id)
+        task.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+def complete_task(request, task_id):
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=task_id)
+        task.is_completed = not task.is_completed
+        task.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
