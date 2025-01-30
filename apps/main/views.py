@@ -196,3 +196,61 @@ def complete_task(request, task_id):
         task.save()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpResponse
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+import re
+
+# Celery
+from celery import shared_task
+
+# Models
+from apps.main.models import User, Plan, Category, Task
+
+# Serializers
+from apps.main.serializers import UserRegisterSerializer
+
+@shared_task
+def delete_plan_task(plan_id):
+    plan = Plan.objects.filter(id=plan_id).first()
+    if plan:
+        plan.delete()
+    return {'success': bool(plan)}
+
+@shared_task
+def delete_task_task(task_id):
+    task = Task.objects.filter(id=task_id).first()
+    if task:
+        task.delete()
+    return {'success': bool(task)}
+
+@shared_task
+def complete_task_task(task_id):
+    task = Task.objects.filter(id=task_id).first()
+    if task:
+        task.is_completed = not task.is_completed
+        task.save()
+    return {'success': bool(task)}
+
+@login_required
+def delete_plan(request, plan_id):
+    if request.method == 'POST':
+        delete_plan_task.delay(plan_id)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+@login_required
+def delete_task(request, task_id):
+    if request.method == 'POST':
+        delete_task_task.delay(task_id)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
+def complete_task(request, task_id):
+    if request.method == 'POST':
+        complete_task_task.delay(task_id)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
